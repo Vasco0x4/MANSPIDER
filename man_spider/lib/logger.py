@@ -74,9 +74,31 @@ class CustomQueueListener(QueueListener):
             pass
 
 
+class BrokenPipeStreamHandler(logging.StreamHandler):
+    """
+    StreamHandler that silently drops log records when the output pipe is broken.
+    Avoids noisy '--- Logging error ---' tracebacks when piping to tee/grep
+    and the downstream process exits early (e.g. wrong argument passed to tee).
+    """
+
+    def emit(self, record):
+        try:
+            super().emit(record)
+        except BrokenPipeError:
+            pass
+
+    def handleError(self, record):
+        import sys
+
+        t, _, _ = sys.exc_info()
+        if t is BrokenPipeError:
+            return
+        super().handleError(record)
+
+
 ### LOG TO STDERR ###
 
-console = logging.StreamHandler(stdout)
+console = BrokenPipeStreamHandler(stdout)
 # tell the handler to use this format
 console.setFormatter(ColoredFormatter("%(levelname)s %(message)s"))
 
