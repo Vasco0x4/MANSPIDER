@@ -79,6 +79,12 @@ def main():
 
     Example 4: Search for finance-related files
     $ manspider share.evilcorp.local --dirnames bank financ payable payment reconcil remit voucher vendor eft swift -f '[0-9]{5,}' -d evilcorp -u bob -p Passw0rd
+
+    Example 5: Search content while skipping Windows system noise (PolicyDefinitions, WinSxS, .adml/.admx etc.)
+    $ manspider 192.168.0.0/24 -c passw -d evilcorp -u bob -p Passw0rd --noise-filter moderate
+
+    Example 6: Same but also skip System32, SysWOW64, Fonts, Spool, Windows Defender
+    $ manspider 192.168.0.0/24 -c passw -d evilcorp -u bob -p Passw0rd --noise-filter aggressive
     """
 
     parser = argparse.ArgumentParser(

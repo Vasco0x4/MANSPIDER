@@ -11,6 +11,7 @@
 - **Modern package management** with [uv](https://github.com/astral-sh/uv) for faster, more reliable installations
 - **Python 3.14 support** - ready for the latest Python releases
 - **Date filtering** - search files by modification date with `--modified-after` and `--modified-before`
+- **Noise filtering** - skip well-known Windows system directories and file types with `--noise-filter moderate/aggressive`
 - **Comprehensive unit tests** - improved reliability and stability
 
 ---
@@ -149,6 +150,16 @@ $ manspider share.evilcorp.local -e pfx p12 pkcs12 pem key crt cer csr jks keyst
 $ manspider share.evilcorp.local -e docx xlsx pdf --modified-after 2026-01-01 -d evilcorp -u bob -p Passw0rd
 ~~~
 
+### Example #11: Search content while filtering out Windows system noise
+Use `--noise-filter` to skip well-known Windows system directories and file types that clutter results (Group Policy templates, component store, update staging, etc.)
+~~~bash
+# moderate: skips PolicyDefinitions, WinSxS, Servicing + .adml/.admx/.mui/.mof/.cat/.manifest files
+$ manspider 192.168.0.0/24 -c passw -d evilcorp -u bob -p Passw0rd --noise-filter moderate
+
+# aggressive: also skips System32, SysWOW64, Assembly, Fonts, Spool, Windows Defender
+$ manspider 192.168.0.0/24 -c passw -d evilcorp -u bob -p Passw0rd --noise-filter aggressive
+~~~
+
 ### Usage Tip #1:
 You can run multiple instances of manspider at one time. This is useful when one instance is already running, and you want to search what it's downloaded (similar to `grep -R`). To do this, specify the keyword `loot` as the target, which will search the downloaded files in `$HOME/.manspider/loot`.
 
@@ -180,8 +191,8 @@ For example, you could specify any or all of these:
 ~~~
 usage: manspider [-h] [-u USERNAME] [-p PASSWORD] [-d DOMAIN] [-l LOOT_DIR] [-m MAXDEPTH] [-H HASH] [-k] [-aesKey HEX] [-dc-ip IP] [-t THREADS] [-f REGEX [REGEX ...]] [-e EXT [EXT ...]]
                  [--exclude-extensions EXT [EXT ...]] [-c REGEX [REGEX ...]] [--sharenames SHARE [SHARE ...]] [--exclude-sharenames [SHARE ...]] [--dirnames DIR [DIR ...]]
-                 [--exclude-dirnames DIR [DIR ...]] [-q] [-n] [-mfail INT] [-o] [-s SIZE] [-v]
-                 targets [targets ...]
+                 [--exclude-dirnames DIR [DIR ...]] [-q] [-n] [-mfail INT] [-o] [-s SIZE] [-v] [--noise-filter MODE]
+                 [--modified-after DATE] [--modified-before DATE] targets [targets ...]
 
 Scan for juicy data on SMB shares. Matching files and logs are stored in $HOME/.manspider. All filters are case-insensitive.
 
@@ -231,6 +242,9 @@ options:
   -s, --max-filesize SIZE
                         don't retrieve files over this size, e.g. "500K" or ".5M" (default: 10M)
   -v, --verbose         show debugging messages
+  --noise-filter MODE   filter out common Windows system noise to reduce clutter.
+                        moderate: skips PolicyDefinitions, WinSxS, Servicing + .adml/.admx/.mui/.mof/.cat/.manifest files.
+                        aggressive: also skips System32, SysWOW64, Assembly, Fonts, Spool, Windows Defender.
   --modified-after DATE
                         only show files modified after this date (format: YYYY-MM-DD)
   --modified-before DATE
